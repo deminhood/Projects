@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Custom Tonie Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Nunito+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #639922;
+    --green-light: #EAF3DE;
+    --green-mid: #C0DD97;
+    --green-dark: #27500A;
+    --blue: #185FA5;
+    --blue-light: #E6F1FB;
+    --blue-mid: #B5D4F4;
+    --amber-light: #FAEEDA;
+    --amber-dark: #633806;
+    --gray-bg: #F7F6F2;
+    --gray-border: #E0DED6;
+    --gray-muted: #888780;
+    --text: #1a1a18;
+    --text-secondary: #5F5E5A;
+    --white: #ffffff;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito Sans', sans-serif;
+    background: var(--gray-bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  header {
+    background: var(--white);
+    border-bottom: 1px solid var(--gray-border);
+    padding: 1.25rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .logo {
+    width: 38px;
+    height: 38px;
+    background: var(--green);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+
+  header h1 {
+    font-family: 'Nunito', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.3px;
+  }
+
+  header p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 1px;
+  }
+
+  .header-right {
+    margin-left: auto;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .stats-pill {
+    background: var(--gray-bg);
+    border: 1px solid var(--gray-border);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .stats-pill span {
+    color: var(--green);
+    font-weight: 800;
+  }
+
+  main {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  .top-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    background: var(--white);
+    border: 1px solid var(--gray-border);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.25rem;
+    text-align: center;
+  }
+
+  .stat-num {
+    font-family: 'Nunito', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+    font-weight: 500;
+  }
+
+  .section-label {
+    font-family: 'Nunito', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+  }
+
+  .phase {
+    background: var(--white);
+    border: 1px solid var(--gray-border);
+    border-radius: var(--radius);
+    margin-bottom: 1rem;
+    overflow: hidden;
+  }
+
+  .phase.complete {
+    border-color: var(--green-mid);
+  }
+
+  .phase-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 1.1rem 1.25rem;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+  }
+
+  .phase-header:hover { background: var(--gray-bg); }
+
+  .phase-badge {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+    font-family: 'Nunito', sans-serif;
+  }
+
+  .badge-done { background: var(--green-mid); color: var(--green-dark); }
+  .badge-active { background: var(--blue-mid); color: var(--blue); }
+  .badge-todo { background: var(--gray-bg); color: var(--text-secondary); border: 1px solid var(--gray-border); }
+
+  .phase-info { flex: 1; }
+  .phase-title {
+    font-family: 'Nunito', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .phase-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+  .phase-arrow {
+    font-size: 11px;
+    color: var(--gray-muted);
+    transition: transform 0.2s;
+  }
+
+  .phase-arrow.open { transform: rotate(90deg); }
+
+  .phase-body {
+    display: none;
+    border-top: 1px solid var(--gray-border);
+    padding: 0 1.25rem;
+  }
+
+  .phase-body.open { display: block; }
+
+  .progress-wrap {
+    padding: 1rem 0 0.25rem;
+  }
+
+  .progress-track {
+    background: var(--gray-bg);
+    border-radius: 20px;
+    height: 5px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--green);
+    border-radius: 20px;
+    transition: width 0.3s ease;
+  }
+
+  .step {
+    display: flex;
+    gap: 14px;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--gray-border);
+    align-items: flex-start;
+  }
+
+  .step:last-child { border-bottom: none; margin-bottom: 0.5rem; }
+
+  .step-checkbox {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    border: 1.5px solid var(--gray-border);
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-top: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    background: var(--white);
+    transition: all 0.15s;
+    color: transparent;
+  }
+
+  .step-checkbox:hover { border-color: var(--green); }
+  .step-checkbox.checked { background: var(--green); border-color: var(--green-dark); color: white; }
+
+  .step-content { flex: 1; }
+
+  .step-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+    transition: color 0.15s;
+  }
+
+  .step-title.done {
+    color: var(--text-secondary);
+    text-decoration: line-through;
+  }
+
+  .step-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.65; }
+
+  .callout {
+    font-size: 12.5px;
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    margin-top: 10px;
+    line-height: 1.55;
+  }
+
+  .callout-tip { background: var(--blue-light); color: #0C447C; }
+  .callout-warn { background: var(--amber-light); color: var(--amber-dark); }
+
+  .step-link {
+    display: inline-block;
+    font-size: 12px;
+    color: var(--blue);
+    margin-top: 7px;
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .step-link:hover { text-decoration: underline; }
+
+  /* Tracker */
+  .tracker-card {
+    background: var(--white);
+    border: 1px solid var(--gray-border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 1rem;
+  }
+
+  .tracker-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 1.1rem 1.25rem;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+  }
+
+  .tracker-header:hover { background: var(--gray-bg); }
+
+  .tracker-star {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #FAEEDA;
+    color: #854F0B;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .tracker-body {
+    display: none;
+    border-top: 1px solid var(--gray-border);
+    padding: 1.25rem;
+  }
+
+  .tracker-body.open { display: block; }
+
+  .tracker-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+
+  .tracker-toolbar h3 {
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .add-btn {
+    background: var(--green);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Nunito Sans', sans-serif;
+    transition: background 0.15s;
+  }
+
+  .add-btn:hover { background: var(--green-dark); }
+
+  .char-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 10px;
+  }
+
+  .char-card {
+    border: 1px solid var(--gray-border);
+    border-radius: var(--radius-sm);
+    padding: 0.9rem;
+    background: var(--white);
+    position: relative;
+  }
+
+  .char-card.complete {
+    border-color: var(--green-mid);
+    background: var(--green-light);
+  }
+
+  .char-name {
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 3px;
+    padding-right: 18px;
+  }
+
+  .char-story {
+    font-size: 11.5px;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    line-height: 1.4;
+  }
+
+  .char-pills { display: flex; gap: 5px; flex-wrap: wrap; }
+
+  .pill {
+    font-size: 11px;
+    padding: 2px 9px;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+
+  .pill-green { background: var(--green-mid); color: var(--green-dark); }
+  .pill-blue { background: var(--blue-mid); color: var(--blue); }
+  .pill-gray { background: var(--gray-bg); color: var(--text-secondary); border: 1px solid var(--gray-border); }
+
+  .del-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: var(--gray-muted);
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+  }
+
+  .del-btn:hover { color: var(--text); }
+
+  .empty-state {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+    width: 100%;
+    max-width: 380px;
+    border: 1px solid var(--gray-border);
+  }
+
+  .modal h3 {
+    font-family: 'Nunito', sans-serif;
+    font-size: 17px;
+    font-weight: 800;
+    margin-bottom: 1.25rem;
+    color: var(--text);
+  }
+
+  .form-group { margin-bottom: 1rem; }
+
+  .form-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .form-group input,
+  .form-group select {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--gray-border);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-family: 'Nunito Sans', sans-serif;
+    color: var(--text);
+    background: var(--white);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus {
+    border-color: var(--blue);
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+  }
+
+  .btn-cancel {
+    padding: 8px 18px;
+    border: 1px solid var(--gray-border);
+    border-radius: var(--radius-sm);
+    background: var(--white);
+    color: var(--text-secondary);
+    font-size: 14px;
+    cursor: pointer;
+    font-family: 'Nunito Sans', sans-serif;
+    font-weight: 600;
+  }
+
+  .btn-save {
+    padding: 8px 18px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: var(--green);
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: 'Nunito Sans', sans-serif;
+    font-weight: 700;
+    transition: background 0.15s;
+  }
+
+  .btn-save:hover { background: var(--green-dark); }
+
+  @media (max-width: 540px) {
+    header { padding: 1rem; }
+    main { padding: 1.25rem 1rem 3rem; }
+    .top-stats { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .stat-num { font-size: 24px; }
+    .header-right { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🧸</div>
+  <div>
+    <h1>Custom Tonie Builder</h1>
+    <p>Step-by-step guide &amp; character tracker</p>
+  </div>
+  <div class="header-right">
+    <div class="stats-pill"><span id="h-steps">0</span> steps done</div>
+    <div class="stats-pill"><span id="h-complete">0</span>/<span id="h-total">0</span> characters</div>
+  </div>
+</header>
+
+<main>
+
+  <div class="top-stats">
+    <div class="stat-card">
+      <div class="stat-num" id="s-steps">0</div>
+      <div class="stat-label">steps done</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="s-chars">0</div>
+      <div class="stat-label">characters</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="s-done">0</div>
+      <div class="stat-label">complete</div>
+    </div>
+  </div>
+
+  <div class="section-label" style="margin-bottom:0.75rem">The build guide</div>
+  <div id="phases-container"></div>
+
+  <div class="section-label" style="margin-top:2rem;margin-bottom:0.75rem">Character tracker</div>
+  <div class="tracker-card">
+    <div class="tracker-header" onclick="toggleTracker()">
+      <div class="tracker-star">★</div>
+      <div class="phase-info">
+        <div class="phase-title">Your characters</div>
+        <div class="phase-sub">Map each figure to its story, 1:1</div>
+      </div>
+      <div class="phase-arrow" id="tracker-arrow">▶</div>
+    </div>
+    <div class="tracker-body" id="tracker-body">
+      <div class="tracker-toolbar">
+        <h3>Characters</h3>
+        <button class="add-btn" onclick="openModal()">+ Add character</button>
+      </div>
+      <div id="char-grid" class="char-grid"></div>
+    </div>
+  </div>
+
+</main>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <h3>Add a character</h3>
+    <div class="form-group">
+      <label>Character name</label>
+      <input type="text" id="m-name" placeholder="e.g. Elsa" />
+    </div>
+    <div class="form-group">
+      <label>Story / .nfc file path</label>
+      <input type="text" id="m-story" placeholder="e.g. Disney/Frozen/Elsa.nfc" />
+    </div>
+    <div class="form-group">
+      <label>Figure type</label>
+      <select id="m-type">
+        <option value="3d">3D print</option>
+        <option value="clay">Clay sculpt</option>
+        <option value="existing">Existing toy</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Tag status</label>
+      <select id="m-tag">
+        <option value="pending">Not written yet</option>
+        <option value="writing">Writing in progress</option>
+        <option value="done">Tag written &amp; tested ✓</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveChar()">Add character</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const PHASES = [
+  {
+    id: "supplies",
+    title: "Get your supplies",
+    icon: "1",
+    steps: [
+      {
+        title: "Order NTAG215 NFC coin tags",
+        desc: "Search Amazon for \"NTAG215 NFC coin tags\" — 25mm coin-shaped ones work best for embedding in figure bases. A 25-pack runs about $10–15. Do NOT get NTAG213 or NTAG216 — they won't work with the Toniebox.",
+        tip: "Order at least 10% more than you need to account for duds or mistakes during writing.",
+      },
+      {
+        title: "Decide on your tag-writing method",
+        desc: "Option A: Flipper Zero — easiest, just load the .nfc file and tap the tag. Option B: ACR122U USB NFC reader (~$25) + NFC Tools on PC — cheaper upfront but more setup involved.",
+        tip: "If you already have a Flipper Zero, use it. If not, the ACR122U route saves ~$140 and works well for a batch project.",
+      },
+      {
+        title: "Download the NFC file library",
+        desc: "Go to the GitHub repo and download or clone the entire English folder. Each .nfc file is a ready-to-write tag for one specific Tonie story — 109 English titles in total.",
+        link: "https://github.com/nortakales/flipper-zero-tonies/tree/master/English",
+        linkText: "Open the GitHub repo →"
+      },
+      {
+        title: "Gather figure-making materials",
+        desc: "Pick your build method: air-dry clay (easiest, no equipment needed), 3D printed model from Printables or Thingiverse (best finish), or an existing toy with a sticker NFC tag applied to the base.",
+        tip: "The Toniebox reads from the base of the figure, so the tag just needs to sit flat against the top surface of the box. It reads through plastic and clay just fine."
+      }
+    ]
+  },
+  {
+    id: "planning",
+    title: "Plan your characters",
+    icon: "2",
+    steps: [
+      {
+        title: "Browse the story library and pick your lineup",
+        desc: "Open the README in the repo — 109 English titles including Disney, Paw Patrol, Sesame Street, Dr. Seuss, DreamWorks and more. Pick which ones you want and note the exact folder path (e.g. Disney/Frozen/Elsa.nfc).",
+        link: "https://github.com/nortakales/flipper-zero-tonies/blob/master/English/README.md",
+        linkText: "Browse all 109 titles →"
+      },
+      {
+        title: "Add each character to the tracker",
+        desc: "Use the Character Tracker section below to log each figure: the character name, which .nfc file it maps to, what kind of figure you're making, and its tag status. One character = one story = one NFC tag, no exceptions.",
+        tip: "Keep it strictly 1:1. The Toniebox reads the tag's UID and maps it to exactly one audio stream on Tonies' servers. You can't put multiple stories on one tag."
+      },
+      {
+        title: "Decide your build order",
+        desc: "Recommended: write and test all your NFC tags first before spending time building the physical figures. Confirm each tag plays the right audio on your Toniebox before the figure is constructed.",
+        warn: "Tonies has pushed firmware updates in the past that temporarily broke cloned tags. Full memory writes (not just UID spoofing) are far more reliable. The .nfc files in this repo are full writes — use them as-is."
+      }
+    ]
+  },
+  {
+    id: "writing",
+    title: "Write the NFC tags",
+    icon: "3",
+    steps: [
+      {
+        title: "Flipper Zero method: load and write",
+        desc: "Copy the .nfc file from the repo onto your Flipper's SD card under the /NFC folder. On your Flipper: NFC > Saved > [filename] > Write. Hold your blank NTAG215 tag against the Flipper's top and tap Write.",
+        tip: "Write mode clones the full tag including UID and all memory pages. This is what you want — not just an emulation."
+      },
+      {
+        title: "ACR122U method: write via NFC Tools",
+        desc: "The .nfc files are in Flipper's text-based hex format. Open one in a text editor to find the UID and page data. In NFC Tools Pro on PC, create a new tag write, enter the UID manually, and write each data page's hex values.",
+        warn: "This method is tedious for many tags. If you're making 10+ characters, a Flipper Zero or borrowing one from a friend makes this dramatically faster."
+      },
+      {
+        title: "Test each tag on your Toniebox",
+        desc: "Place the freshly written tag — just the bare tag, no figure yet — flat on top of your Toniebox. It should start playing within 2–3 seconds. If it plays the right audio: success! Update its status in your tracker.",
+        tip: "If it doesn't play, the write likely failed — try writing again. If it plays the wrong story, double-check you used the right .nfc file."
+      },
+      {
+        title: "Label every tag immediately after testing",
+        desc: "Put a tiny sticker label or marker dot on each tested tag with the character name. Unlabeled NTAG215 coins are physically identical and impossible to tell apart once you have a pile of them.",
+        warn: "This step sounds obvious but gets skipped constantly and causes chaos. Label it before you set it down."
+      }
+    ]
+  },
+  {
+    id: "building",
+    title: "Build the figures",
+    icon: "4",
+    steps: [
+      {
+        title: "Clay figures: sculpt and embed the tag",
+        desc: "Sculpt your character shape and leave the base flat and at least 1cm thick. Press the NFC coin tag into the wet clay on the bottom of the base before it dries. Let it cure fully (24–48 hours depending on brand). Paint and seal once dry.",
+        tip: "Keep the tag as close to the bottom surface as possible. Excess clay between the tag and the Toniebox surface can reduce read range, though NTAG215 chips are quite strong."
+      },
+      {
+        title: "3D print: design a recess for the tag",
+        desc: "Search Printables or Thingiverse for your character. If designing your own, add a circular recess in the base (~26mm diameter, ~3mm deep) to seat the NFC coin flush. Glue it in place with a dab of epoxy after printing.",
+        link: "https://www.printables.com",
+        linkText: "Browse models on Printables →"
+      },
+      {
+        title: "Existing toy: apply a sticker NFC tag",
+        desc: "Get NTAG215 sticker-form tags (thin, adhesive-backed circles). Apply to the flat bottom of the figure. The Toniebox reads through up to ~5mm of plastic or material without issue.",
+        tip: "A thin layer of clear epoxy over the sticker protects it from peeling with repeated use on the Toniebox."
+      },
+      {
+        title: "Final test with the completed figure",
+        desc: "Place the finished figure on your Toniebox. Confirm it plays the right story all the way through. Update the tracker to complete. Then make the next one.",
+        tip: "If range is reduced compared to the bare tag test, try repositioning the tag closer to the very bottom surface of the base, or thinning the base slightly."
+      }
+    ]
+  }
+];
+
+let checks = {};
+let chars = [];
+
+try { checks = JSON.parse(localStorage.getItem('tonie-checks') || '{}'); } catch(e) {}
+try { chars = JSON.parse(localStorage.getItem('tonie-chars') || '[]'); } catch(e) {}
+
+function persist() {
+  try { localStorage.setItem('tonie-checks', JSON.stringify(checks)); } catch(e) {}
+  try { localStorage.setItem('tonie-chars', JSON.stringify(chars)); } catch(e) {}
+}
+
+function updateStats() {
+  const totalSteps = PHASES.reduce((a, p) => a + p.steps.length, 0);
+  const doneSteps = Object.values(checks).filter(Boolean).length;
+  const totalChars = chars.length;
+  const doneChars = chars.filter(c => c.tag === 'done').length;
+
+  document.getElementById('s-steps').textContent = doneSteps;
+  document.getElementById('s-chars').textContent = totalChars;
+  document.getElementById('s-done').textContent = doneChars;
+  document.getElementById('h-steps').textContent = doneSteps;
+  document.getElementById('h-complete').textContent = doneChars;
+  document.getElementById('h-total').textContent = totalChars;
+}
+
+function buildPhases() {
+  const container = document.getElementById('phases-container');
+  PHASES.forEach((phase, pi) => {
+    const total = phase.steps.length;
+    const done = phase.steps.filter((_, si) => checks[phase.id + '-' + si]).length;
+    const pct = Math.round(done / total * 100);
+    const isDone = done === total;
+
+    const el = document.createElement('div');
+    el.className = 'phase' + (isDone ? ' complete' : '');
+    el.id = 'phase-' + phase.id;
+
+    el.innerHTML = `
+      <div class="phase-header" onclick="togglePhase('${phase.id}')">
+        <div class="phase-badge ${isDone ? 'badge-done' : 'badge-active'}" id="badge-${phase.id}">${isDone ? '✓' : pi + 1}</div>
+        <div class="phase-info">
+          <div class="phase-title">${phase.title}</div>
+          <div class="phase-sub" id="sub-${phase.id}">${done}/${total} steps complete</div>
+        </div>
+        <div class="phase-arrow" id="arrow-${phase.id}">▶</div>
+      </div>
+      <div class="phase-body" id="body-${phase.id}">
+        <div class="progress-wrap">
+          <div class="progress-track">
+            <div class="progress-fill" id="bar-${phase.id}" style="width:${pct}%"></div>
+          </div>
+        </div>
+        ${phase.steps.map((step, si) => {
+          const key = phase.id + '-' + si;
+          const isChecked = !!checks[key];
+          return `
+          <div class="step">
+            <div class="step-checkbox ${isChecked ? 'checked' : ''}" id="chk-${key}" onclick="toggleStep('${key}', '${phase.id}', ${total})">✓</div>
+            <div class="step-content">
+              <div class="step-title ${isChecked ? 'done' : ''}" id="stitle-${key}">${step.title}</div>
+              <div class="step-desc">${step.desc}</div>
+              ${step.tip ? `<div class="callout callout-tip"><strong>Tip:</strong> ${step.tip}</div>` : ''}
+              ${step.warn ? `<div class="callout callout-warn"><strong>Heads up:</strong> ${step.warn}</div>` : ''}
+              ${step.link ? `<a class="step-link" href="${step.link}" target="_blank">${step.linkText}</a>` : ''}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    container.appendChild(el);
+  });
+}
+
+function togglePhase(id) {
+  const body = document.getElementById('body-' + id);
+  const arrow = document.getElementById('arrow-' + id);
+  const open = body.classList.contains('open');
+  body.classList.toggle('open', !open);
+  arrow.classList.toggle('open', !open);
+}
+
+function toggleTracker() {
+  const body = document.getElementById('tracker-body');
+  const arrow = document.getElementById('tracker-arrow');
+  body.classList.toggle('open');
+  arrow.classList.toggle('open');
+}
+
+function toggleStep(key, phaseId, total) {
+  checks[key] = !checks[key];
+  persist();
+
+  const chk = document.getElementById('chk-' + key);
+  const title = document.getElementById('stitle-' + key);
+  chk.classList.toggle('checked', checks[key]);
+  title.classList.toggle('done', checks[key]);
+
+  const done = PHASES.find(p => p.id === phaseId).steps.filter((_, si) => checks[phaseId + '-' + si]).length;
+  const isDone = done === total;
+  const pct = Math.round(done / total * 100);
+
+  document.getElementById('sub-' + phaseId).textContent = done + '/' + total + ' steps complete';
+  document.getElementById('bar-' + phaseId).style.width = pct + '%';
+
+  const badge = document.getElementById('badge-' + phaseId);
+  const pi = PHASES.findIndex(p => p.id === phaseId);
+  badge.className = 'phase-badge ' + (isDone ? 'badge-done' : 'badge-active');
+  badge.textContent = isDone ? '✓' : (pi + 1);
+
+  const phaseEl = document.getElementById('phase-' + phaseId);
+  phaseEl.classList.toggle('complete', isDone);
+
+  updateStats();
+}
+
+function renderChars() {
+  const grid = document.getElementById('char-grid');
+  if (chars.length === 0) {
+    grid.innerHTML = '<div class="empty-state">No characters yet — hit "Add character" to map your first figure to a story.</div>';
+    return;
+  }
+  const tagLabel = { pending: 'tag pending', writing: 'writing tag', done: 'tag done ✓' };
+  const tagClass = { pending: 'pill-gray', writing: 'pill-blue', done: 'pill-green' };
+  const typeLabel = { '3d': '3D print', clay: 'clay', existing: 'existing toy', other: 'other' };
+
+  grid.innerHTML = chars.map((c, i) => `
+    <div class="char-card ${c.tag === 'done' ? 'complete' : ''}">
+      <button class="del-btn" onclick="deleteChar(${i})" title="Remove">×</button>
+      <div class="char-name">${c.name}</div>
+      <div class="char-story">${c.story || 'No file mapped yet'}</div>
+      <div class="char-pills">
+        <span class="pill ${tagClass[c.tag]}">${tagLabel[c.tag]}</span>
+        <span class="pill pill-gray">${typeLabel[c.type] || c.type}</span>
+      </div>
+    </div>`).join('');
+
+  updateStats();
+}
+
+function openModal() {
+  document.getElementById('modal-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('m-name').focus(), 50);
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.getElementById('m-name').value = '';
+  document.getElementById('m-story').value = '';
+  document.getElementById('m-type').value = '3d';
+  document.getElementById('m-tag').value = 'pending';
+}
+
+function saveChar() {
+  const name = document.getElementById('m-name').value.trim();
+  if (!name) { document.getElementById('m-name').focus(); return; }
+  chars.push({
+    name,
+    story: document.getElementById('m-story').value.trim(),
+    type: document.getElementById('m-type').value,
+    tag: document.getElementById('m-tag').value
+  });
+  persist();
+  renderChars();
+  closeModal();
+}
+
+function deleteChar(i) {
+  if (!confirm('Remove ' + chars[i].name + '?')) return;
+  chars.splice(i, 1);
+  persist();
+  renderChars();
+}
+
+document.getElementById('modal-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+buildPhases();
+renderChars();
+updateStats();
+</script>
+</body>
+</html>
